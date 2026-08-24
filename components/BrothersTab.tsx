@@ -89,7 +89,22 @@ export function BrothersTab({ A }: { A: string }) {
           </button>
         </div>
 
-        {(formError || error) && <div style={{ color: "#E8AAAA", fontSize: "12px", marginTop: "14px" }}>{formError || error}</div>}
+        {(formError || error) && (
+          <div style={{ marginTop: "14px" }}>
+            <div style={{ color: "#E8AAAA", fontSize: "12px", marginBottom: (formError || "").includes("Verify your email") ? "8px" : 0 }}>{formError || error}</div>
+            {(formError || "").includes("Verify your email") && (
+              <button onClick={async () => {
+                setBusy(true);
+                const res = await fetch("/api/auth/resend-verification", { method: "POST" });
+                const data = await res.json().catch(() => ({}));
+                setFormError(res.ok ? "Verification email sent — check your inbox." : data.error || "Could not send it.");
+                setBusy(false);
+              }} disabled={busy} style={{ background: "transparent", border: `1px solid ${A}40`, color: A, padding: "7px 12px", cursor: "pointer", ...sn, fontSize: "7px", letterSpacing: "2px", textTransform: "uppercase" }}>
+                Resend Verification Email
+              </button>
+            )}
+          </div>
+        )}
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { issueVerificationEmail } from "@/lib/verification";
 
 // Practical email format check — not full RFC 5322, but catches the typos
 // and garbage that ("@" somewhere in the string) let through.
@@ -37,6 +38,13 @@ export async function POST(req: Request) {
       data: { email, passwordHash, name },
       select: { id: true, email: true, name: true },
     });
+    try {
+      await issueVerificationEmail(user.id, user.email, user.name);
+    } catch (emailErr) {
+      // Don't fail account creation over a flaky email provider — the
+      // account still works, and they can resend from Settings.
+      console.error("Failed to send verification email:", emailErr);
+    }
     return NextResponse.json({ user });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

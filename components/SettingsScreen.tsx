@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { C, sr, sn } from "@/lib/theme";
 import { LS, UID, usePersist } from "@/lib/storage";
@@ -8,16 +8,53 @@ import { Lbl } from "@/components/atoms";
 
 function AccountSettings(){
   const { data: session, status } = useSession();
+  const [verified, setVerified] = useState<boolean | null>(null);
+  const [resendState, setResendState] = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [resendMsg, setResendMsg] = useState("");
+
+  useEffect(()=>{
+    if(status!=="authenticated") return;
+    fetch("/api/account").then(r=>r.ok?r.json():null).then(d=>{ if(d) setVerified(d.verified); });
+  },[status]);
+
   if(status!=="authenticated") return (
     <div>
       <p style={{fontSize:"13px",color:C.dim,lineHeight:1.78,margin:"0 0 14px"}}>You're not signed in — your Rule and journal still work on this device, but you'll need an account to join a Cell with real brothers.</p>
       <a href="/login" style={{display:"block",textAlign:"center",padding:"12px",background:`${C.gold}14`,border:`1px solid ${C.gold}40`,color:C.gold,...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",textDecoration:"none"}}>Sign In</a>
     </div>
   );
+
+  const resend = async () => {
+    setResendState("sending"); setResendMsg("");
+    const res = await fetch("/api/auth/resend-verification", { method: "POST" });
+    const data = await res.json().catch(()=>({}));
+    if(res.ok){ setResendState("sent"); }
+    else { setResendState("error"); setResendMsg(data.error || "Could not send it."); }
+  };
+
   return (
     <div>
       <div style={{...sr,fontSize:"14px",color:C.cream,marginBottom:"2px"}}>{session.user?.name}</div>
-      <div style={{...sn,fontSize:"11px",color:C.dim,marginBottom:"14px"}}>{session.user?.email}</div>
+      <div style={{...sn,fontSize:"11px",color:C.dim,marginBottom:"10px"}}>{session.user?.email}</div>
+
+      {verified===false && (
+        <div style={{padding:"11px 13px",background:`${C.gold}10`,border:`1px solid ${C.gold}40`,marginBottom:"12px"}}>
+          <div style={{...sn,fontSize:"8px",color:C.gold,letterSpacing:"2px",textTransform:"uppercase",marginBottom:"6px"}}>Email not verified</div>
+          <p style={{fontSize:"12px",color:C.dim,lineHeight:1.6,margin:"0 0 9px"}}>Verify to create or join a Cell.</p>
+          {resendState==="sent" ? (
+            <div style={{...sn,fontSize:"10px",color:C.green}}>✓ Sent — check your inbox.</div>
+          ) : (
+            <button onClick={resend} disabled={resendState==="sending"} style={{background:"transparent",border:`1px solid ${C.gold}50`,color:C.gold,padding:"7px 12px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"2px",textTransform:"uppercase"}}>
+              {resendState==="sending"?"Sending…":"Resend Verification Email"}
+            </button>
+          )}
+          {resendState==="error" && <div style={{...sn,fontSize:"10px",color:"#E8AAAA",marginTop:"7px"}}>{resendMsg}</div>}
+        </div>
+      )}
+      {verified===true && (
+        <div style={{...sn,fontSize:"9px",color:C.green,letterSpacing:"1px",marginBottom:"12px"}}>✓ Email verified</div>
+      )}
+
       <button onClick={()=>signOut({callbackUrl:"/"})} style={{width:"100%",padding:"11px",background:"transparent",border:`1px solid ${C.border}`,color:C.dim,cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase"}}>Sign Out</button>
     </div>
   );
