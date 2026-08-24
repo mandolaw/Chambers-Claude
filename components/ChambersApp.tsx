@@ -6,7 +6,7 @@ import { LS, usePersist, getStreak } from "@/lib/storage";
 import { useLocalReminders } from "@/lib/notifications";
 import { NAV, PILLARS } from "@/data/nav";
 import { CAL, WEEKLY_READINGS, LONG_STUDIES, currentWeekIdx } from "@/data/studyPlans";
-import { EXAMEN_PROMPTS, CONFESS_PROMPTS, DEFAULT_CKQ } from "@/data/examen";
+import { EXAMEN_PROMPTS } from "@/data/examen";
 import { VERSES_BY_MONTH, VERSE_TEXT } from "@/data/verses";
 import { PROMISES } from "@/data/promises";
 import { selectPrayers } from "@/data/prayers";
@@ -18,6 +18,7 @@ import { SeasonalHero } from "@/components/SeasonalHero";
 import { NoondayMode } from "@/components/NoondayMode";
 import { StudyViewer, DayRow } from "@/components/StudyViewer";
 import { IconRule, IconWay, IconPrayer, IconBrothers } from "@/components/icons";
+import { BrothersTab } from "@/components/BrothersTab";
 
 export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any; onOpenSettings: () => void}){
   const today=new Date();
@@ -37,28 +38,6 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
   const [activePlanIdx, setActivePlanIdx] = useState(null);
   const [examenIdx, setExamenIdx] = useState(0);
   const [journalSaved,setJSaved]  = useState(false);
-  const [bManage,   setBManage]   = useState(false);
-  const [bView,     setBView]     = useState("list");
-  const [editB,     setEditB]     = useState(null);
-  const [msgTarget, setMsgTarget] = useState(null);
-  const [msgText,   setMsgText]   = useState("");
-  const [checkinMsg,setCheckinMsg]= useState("");
-  const [newName,   setNewName]   = useState("");
-  const [newPhone,  setNewPhone]  = useState("");
-  const [newEmail,  setNewEmail]  = useState("");
-  const [editQs,    setEditQs]    = useState(false);
-  const [draftQs,   setDraftQs]   = useState([]);
-  const [reachView, setReachView] = useState(null);
-  const [reachTarget,setReachTarget]=useState(null);
-  const [reachMsg,  setReachMsg]  = useState("");
-  const [pView,     setPView]     = useState("list");
-  const [editP,     setEditP]     = useState(null);
-  const [pTarget,   setPTarget]   = useState(null);
-  const [pMsg,      setPMsg]      = useState("");
-  const [newPN,     setNewPN]     = useState("");
-  const [newPR,     setNewPR]     = useState("");
-  const [newPPh,    setNewPPh]    = useState("");
-  const [newPEm,    setNewPEm]    = useState("");
   const [showAddP,  setShowAddP]  = useState(false);
   const [prayerTab, setPrayerTab] = useState("log");   // log | promises
   const [openCat,   setOpenCat]   = useState(null);
@@ -66,9 +45,6 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
   const [newNote,   setNewNote]   = useState("");
   const [newImpMode,setNewImpMode]= useState(false);
   const [todayPrayer,setTodayPrayer]=useState(null);
-  const [redSent,   setRedSent]   = useState(false);
-  const [showCellInput,setShowCellInput]=useState(false);
-  const [cellDraft,setCellDraft]=useState("");
 
   // Persisted
   const [ruleDone,    setRuleDone]    = usePersist("ruleDone",{});
@@ -77,16 +53,9 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
   const [verseChecked,setVerseChecked]= usePersist("verseChecked",{});
   const [challengeDone,setChalDone]   = usePersist("chalDone",{});
   const [prayerLog,   setPrayerLog]   = usePersist("prayerLog",[]);
-  const [brothers,    setBrothers]    = usePersist("brothers",[
-    {id:1,name:"Thomas W.",phone:"",email:"",checkedIn:false,lastCheckin:"Never",hist:[]},
-    {id:2,name:"David M.", phone:"",email:"",checkedIn:false,lastCheckin:"Never",hist:[]},
-  ]);
-  const [checkinQs,   setCheckinQs]   = usePersist("checkinQs",DEFAULT_CKQ);
   const [journal,     setJournal]     = usePersist("journal","");
   const [journalEntries,setJournalEntries] = usePersist("journalEntries",[]);
-  const [pastors,     setPastors]     = usePersist("pastors",[{id:1,name:"Your Pastor",role:"Senior Pastor",phone:"",email:""}]);
   const [selMonth,    setSelMonth]    = usePersist("selMonth",cm);
-  const [cellPosts,   setCellPosts]   = usePersist("cellPosts",[]);
   const [ruleHistory,  setRuleHistory]  = usePersist("ruleHistory",{});
   const [monthNotes,   setMonthNotes]   = usePersist("monthNotes",{});
   const [remindersOn,  setRemindersOn]  = usePersist("remindersOn",false);
@@ -101,13 +70,6 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
   },[]);
 
   useEffect(()=>{
-    const lastReset=LS.get("lastReset","");
-    const mon=new Date();mon.setDate(mon.getDate()-mon.getDay()+1);mon.setHours(0,0,0,0);
-    const key=mon.toDateString();
-    if(lastReset!==key){
-      setBrothers(prev=>prev.map(b=>({...b,checkedIn:false,lastCheckin:b.checkedIn?"Last week":b.lastCheckin})));
-      LS.set("lastReset",key);
-    }
     LS.set("lastVisit",new Date().toISOString());
   },[]);
 
@@ -120,7 +82,6 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
   const todayRuleKey=today.toDateString();
   const todayRule=ruleDone[todayRuleKey]||{};
   const ruleCount=["prayer","scripture","discipline","examine","body"].filter(k=>todayRule[k]).length;
-  const checkedIn=brothers.filter(b=>b.checkedIn).length;
   const currentPillar=PILLARS[pillarIdx%4];
 
   const toggleRule=k=>{
@@ -136,23 +97,9 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
     setDayChecked(p=>({...p,[key]:wasOff}));
     if(wasOff) setReadDates(p=>[...p,today.toISOString().split("T")[0]]);
   };
-  const doCheckin=id=>{
-    const ts=today.toISOString().split("T")[0];
-    setBrothers(p=>p.map(b=>b.id===id?{...b,checkedIn:true,lastCheckin:"Today",hist:[...(b.hist||[]),ts]}:b));
-  };
   const markAnswered=id=>{
     setPrayerLog(p=>p.map(x=>x.id===id?{...x,answered:true,answeredOn:new Date().toLocaleDateString()}:x));
     setShowGold(true);setTimeout(()=>setShowGold(false),4000);
-  };
-  const addCellPost=(text,type="word")=>{
-    setCellPosts(p=>[{id:Date.now(),author:LS.get("myName","Me"),text,type,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),date:new Date().toLocaleDateString(),marks:{cross:0,flame:0},myMark:null},...p].slice(0,50));
-  };
-  const markCellPost=(id,mark)=>{
-    setCellPosts(p=>p.map(post=>{
-      if(post.id!==id) return post;
-      const hadMark=post.myMark===mark;
-      return {...post,marks:{...post.marks,[mark]:Math.max(0,(post.marks[mark]||0)+(hadMark?-1:1))},myMark:hadMark?null:mark};
-    }));
   };
 
   const RULE_ITEMS=[
@@ -195,7 +142,7 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
           const IconComp = {rule:IconRule, way:IconWay, prayer:IconPrayer, brothers:IconBrothers}[id];
           const iconColor = tab===id?A:C.dim;
           return (
-            <button key={id} onClick={()=>{setTab(id);setReachView(null);setBView("list");setYearView(false);setYearMonth(null);}} style={{flex:1,padding:"11px 2px 9px",background:"none",border:"none",cursor:"pointer",color:iconColor,...sn,fontSize:"6px",letterSpacing:"2px",textTransform:"uppercase",borderBottom:`2px solid ${tab===id?A:"transparent"}`,transition:"all 0.25s",display:"flex",flexDirection:"column",alignItems:"center",gap:"4px"}}>
+            <button key={id} onClick={()=>{setTab(id);setYearView(false);setYearMonth(null);}} style={{flex:1,padding:"11px 2px 9px",background:"none",border:"none",cursor:"pointer",color:iconColor,...sn,fontSize:"6px",letterSpacing:"2px",textTransform:"uppercase",borderBottom:`2px solid ${tab===id?A:"transparent"}`,transition:"all 0.25s",display:"flex",flexDirection:"column",alignItems:"center",gap:"4px"}}>
               <IconComp size={20} color={iconColor}/>{label}
             </button>
           );
@@ -693,343 +640,7 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
 )}
 
 
-{/* ══ BROTHERS TAB ══════════════════════════════════════════ */}
-{tab==="brothers"&&!reachView&&bView==="list"&&(
-<div style={{padding:"20px 18px 0"}}>
-
-  {/* Red Button — one tap prayer flare */}
-  <div style={{marginBottom:"18px"}}>
-    {!redSent?(
-      <button onClick={()=>{
-        setRedSent(true);
-        addCellPost("🚨 I need prayer right now. Please pray for me.","urgent");
-        setTimeout(()=>setRedSent(false),10000);
-      }} style={{width:"100%",padding:"14px",background:`${C.red}18`,border:`1px solid ${C.red}60`,color:"#E8AAAA",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"5px",textTransform:"uppercase",display:"flex",alignItems:"center",justifyContent:"center",gap:"10px"}}>
-        <span style={{fontSize:"16px"}}>✠</span>I Need Prayer Right Now
-      </button>
-    ):(
-      <div style={{width:"100%",padding:"14px",background:`${C.green}12`,border:`1px solid ${C.green}40`,textAlign:"center",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",color:C.green,boxSizing:"border-box"}}>
-        ✦ Sent — Your brothers are praying.
-      </div>
-    )}
-  </div>
-
-  {/* Brotherhood health */}
-  <div style={{padding:"14px 16px",background:C.surface,border:`1px solid ${checkedIn===brothers.length&&brothers.length>0?C.green:C.gold}40`,marginBottom:"18px"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"8px"}}>
-      <span style={{...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",color:C.dim}}>⚔ Weekly Health</span>
-      <span style={{...sr,fontSize:"20px",color:checkedIn===brothers.length&&brothers.length>0?C.green:C.gold}}>
-        {brothers.length?Math.round((checkedIn/brothers.length)*100):0}%
-      </span>
-    </div>
-    <div style={{height:"3px",background:C.border,marginBottom:"7px"}}>
-      <div style={{height:"100%",width:brothers.length?`${(checkedIn/brothers.length)*100}%`:"0%",background:checkedIn===brothers.length&&brothers.length>0?C.green:C.gold,transition:"width 0.6s"}}/>
-    </div>
-    <div style={{...sn,fontSize:"8px",color:C.dim}}>
-      {checkedIn} of {brothers.length} checked in this week
-      {checkedIn===brothers.length&&brothers.length>0&&<span style={{color:C.green,marginLeft:"8px"}}>✦ Full cohort</span>}
-    </div>
-  </div>
-
-  {/* Cell feed */}
-  <div style={{marginBottom:"20px"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
-      <Lbl color={C.dim}>The Cell</Lbl>
-      <button onClick={()=>setShowCellInput(s=>!s)} style={{...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",background:`${A}14`,border:`1px solid ${A}40`,color:A,padding:"4px 11px",cursor:"pointer"}}>+ Leave a Word</button>
-    </div>
-    {showCellInput&&(
-      <div style={{background:C.surface,border:`1px solid ${C.border}`,padding:"13px",marginBottom:"11px"}}>
-        <textarea value={cellDraft} onChange={e=>setCellDraft(e.target.value)} placeholder="A verse, a weight, a prayer — one word for your brothers..." rows={3} style={{width:"100%",background:C.raised,border:`1px solid ${C.border}`,padding:"10px 12px",color:C.cream,fontSize:"14px",...sr,outline:"none",boxSizing:"border-box",resize:"none",lineHeight:1.75,marginBottom:"9px"}}/>
-        <div style={{display:"flex",gap:"8px"}}>
-          <button onClick={()=>{if(cellDraft.trim()){addCellPost(cellDraft.trim());setCellDraft("");setShowCellInput(false);}}} style={{flex:1,background:`${A}18`,border:`1px solid ${A}50`,color:A,padding:"9px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase"}}>Leave It</button>
-          <button onClick={()=>{setShowCellInput(false);setCellDraft("");}} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.dim,padding:"9px 13px",cursor:"pointer",...sn,fontSize:"7px",textTransform:"uppercase"}}>Cancel</button>
-        </div>
-      </div>
-    )}
-    {cellPosts.length===0&&(
-      <div style={{padding:"16px",border:`1px solid ${C.border}`,background:C.surface,textAlign:"center"}}>
-        <p style={{...sn,fontSize:"8px",color:C.dim,letterSpacing:"2px",textTransform:"uppercase",margin:0,lineHeight:1.8}}>Leave a verse, a weight, or a prayer.<br/>Your brothers will see it here.</p>
-      </div>
-    )}
-    {cellPosts.map(post=>(
-      <div key={post.id} style={{background:post.type==="urgent"?`${C.red}10`:C.surface,border:`1px solid ${post.type==="urgent"?C.red+"40":C.border}`,padding:"14px 16px",marginBottom:"6px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"8px"}}>
-          <div style={{...sn,fontSize:"8px",color:post.type==="urgent"?"#E8AAAA":A,letterSpacing:"2px"}}>{post.author}</div>
-          <div style={{...sn,fontSize:"8px",color:C.dim}}>{post.date} · {post.time}</div>
-        </div>
-        <p style={{...sr,fontSize:"14px",color:post.type==="urgent"?"#F2D8D8":C.cream,margin:"0 0 12px",lineHeight:1.75,fontStyle:post.type==="urgent"?"italic":"normal"}}>{post.text}</p>
-        <div style={{display:"flex",gap:"8px"}}>
-          <button onClick={()=>markCellPost(post.id,"cross")} style={{display:"flex",alignItems:"center",gap:"5px",padding:"5px 11px",background:post.myMark==="cross"?`${A}20`:"transparent",border:`1px solid ${post.myMark==="cross"?A:C.border}`,color:post.myMark==="cross"?A:C.dim,cursor:"pointer",...sn,fontSize:"10px",transition:"all 0.2s"}}>
-            ✠ {post.marks?.cross||0}
-          </button>
-          <button onClick={()=>markCellPost(post.id,"flame")} style={{display:"flex",alignItems:"center",gap:"5px",padding:"5px 11px",background:post.myMark==="flame"?`${C.red}15`:"transparent",border:`1px solid ${post.myMark==="flame"?C.red+"60":C.border}`,color:post.myMark==="flame"?"#E8AAAA":C.dim,cursor:"pointer",...sn,fontSize:"10px",transition:"all 0.2s"}}>
-            🔥 {post.marks?.flame||0}
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* Brothers list */}
-  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"5px"}}>
-    <Lbl color={C.dim}>⚔  Brothers</Lbl>
-    <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
-      <button onClick={()=>setBManage(m=>!m)} style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",color:bManage?A:C.dim,padding:"4px 8px",...sn,fontSize:"7px",letterSpacing:"2px",textTransform:"uppercase"}}>{bManage?"Done":"Manage"}</button>
-      <button onClick={()=>{setNewName("");setNewPhone("");setNewEmail("");setEditB(null);setBView("edit");}} style={{background:`${A}14`,border:`1px solid ${A}40`,color:A,padding:"4px 11px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase"}}>+ Add</button>
-    </div>
-  </div>
-  <div style={{height:"1px",background:"rgba(200,168,107,0.09)",marginBottom:"4px"}}/>
-  {brothers.map((b,i)=>{
-    const bStreak=getStreak(b.hist||[]);
-    return(
-      <div key={b.id}>
-        <div style={{display:"flex",alignItems:"center",gap:"13px",padding:"14px 0"}}>
-          <div style={{position:"relative",flexShrink:0}}>
-            <div style={{width:"46px",height:"46px",borderRadius:"50%",border:`2px solid ${b.checkedIn?A:A+"25"}`,display:"flex",alignItems:"center",justifyContent:"center",...sr,fontSize:"16px",color:b.checkedIn?A:`${A}60`,background:b.checkedIn?`${A}15`:C.surface,transition:"all 0.3s"}}>{b.name[0].toUpperCase()}</div>
-            {bStreak>=4&&<div style={{position:"absolute",top:"-3px",right:"-3px",fontSize:"10px"}}>🔥</div>}
-          </div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:"7px",marginBottom:"3px"}}>
-              <div style={{...sr,fontSize:"15px",color:C.cream}}>{b.name}</div>
-              {bStreak>0&&<span style={{...sn,fontSize:"7px",color:A,letterSpacing:"1px"}}>{bStreak}w</span>}
-            </div>
-            <div style={{...sn,fontSize:"8px",color:b.checkedIn?A:C.dim,letterSpacing:"1px"}}>{b.checkedIn?"✓  Checked in this week":`Last: ${b.lastCheckin}`}</div>
-          </div>
-          <div style={{display:"flex",gap:"5px",flexShrink:0}}>
-            <button onClick={()=>{setMsgTarget(b);setCheckinMsg("Checking in, brother. How are you holding up this week?");setBView("checkin");}} style={{background:b.checkedIn?`${A}18`:"transparent",border:`1px solid ${b.checkedIn?A:C.hi}`,color:b.checkedIn?A:C.dim,padding:"6px 10px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"1px",textTransform:"uppercase",transition:"all 0.2s"}}>{b.checkedIn?"✓":"Check In"}</button>
-            <button onClick={()=>{setMsgTarget(b);setMsgText("");setBView("message");}} style={{background:"transparent",border:`1px solid ${C.hi}`,color:C.dim,padding:"6px 10px",cursor:"pointer",fontSize:"13px"}}>✉</button>
-            {bManage&&<button onClick={()=>{setEditB(b);setNewName(b.name);setNewPhone(b.phone||"");setNewEmail(b.email||"");setBView("edit");}} style={{background:"transparent",border:`1px solid ${C.border}`,color:`${C.dim}60`,padding:"6px 9px",cursor:"pointer",fontSize:"11px"}}>✏</button>}
-          </div>
-        </div>
-        {i<brothers.length-1&&<div style={{height:"1px",background:"rgba(200,168,107,0.09)"}}/>}
-      </div>
-    );
-  })}
-  {brothers.length===0&&<div style={{textAlign:"center",padding:"24px",color:C.dim,fontSize:"13px",lineHeight:1.7}}>No brothers added yet. Tap + Add above.</div>}
-
-  {/* Check-in questions */}
-  <div style={{marginTop:"22px",borderTop:`1px solid ${C.border}`,paddingTop:"18px"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
-      <Lbl color={C.dim}>Check-In Questions</Lbl>
-      <button onClick={()=>{setDraftQs([...checkinQs]);setEditQs(true);}} style={{...sn,fontSize:"7px",letterSpacing:"2px",textTransform:"uppercase",background:"transparent",border:`1px solid ${C.border}`,color:C.dim,padding:"4px 10px",cursor:"pointer"}}>Edit</button>
-    </div>
-    {editQs?(
-      <div style={{background:C.surface,border:`1px solid ${C.border}`,padding:"14px"}}>
-        {draftQs.map((q,i)=>(
-          <div key={i} style={{display:"flex",gap:"8px",alignItems:"flex-start",marginBottom:"8px"}}>
-            <span style={{...sn,fontSize:"9px",color:A,minWidth:"16px",marginTop:"10px"}}>{i+1}</span>
-            <textarea value={q} onChange={e=>{const nq=[...draftQs];nq[i]=e.target.value;setDraftQs(nq);}} rows={2} style={{flex:1,background:C.raised,border:`1px solid ${C.hi}`,padding:"8px 10px",color:C.sand,fontSize:"12px",...sr,outline:"none",boxSizing:"border-box",resize:"none",lineHeight:1.6}}/>
-            <button onClick={()=>setDraftQs(draftQs.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:`${C.dim}60`,cursor:"pointer",fontSize:"16px",marginTop:"7px",flexShrink:0}}>×</button>
-          </div>
-        ))}
-        <button onClick={()=>setDraftQs([...draftQs,""])} style={{...sn,fontSize:"7px",letterSpacing:"2px",textTransform:"uppercase",background:"transparent",border:`1px solid ${C.border}`,color:C.dim,padding:"5px 10px",cursor:"pointer",marginBottom:"12px",marginRight:"8px"}}>+ Add</button>
-        <div style={{display:"flex",gap:"7px"}}>
-          <button onClick={()=>{setCheckinQs(draftQs.filter(q=>q.trim()));setEditQs(false);}} style={{flex:1,background:`${A}18`,border:`1px solid ${A}50`,color:A,padding:"9px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase"}}>Save</button>
-          <button onClick={()=>setEditQs(false)} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.dim,padding:"9px 13px",cursor:"pointer",...sn,fontSize:"7px",textTransform:"uppercase"}}>Cancel</button>
-        </div>
-      </div>
-    ):(
-      checkinQs.map((q,i)=>(
-        <div key={i} style={{display:"flex",gap:"11px",padding:"9px 0",borderBottom:`1px solid ${C.border}`}}>
-          <span style={{color:A,...sn,fontSize:"9px",minWidth:"13px"}}>{i+1}</span>
-          <span style={{fontSize:"12px",color:C.sand,opacity:0.7,lineHeight:1.65}}>{q}</span>
-        </div>
-      ))
-    )}
-  </div>
-
-  {/* Reach out */}
-  <div style={{marginTop:"22px",borderTop:`1px solid ${C.border}`,paddingTop:"18px",marginBottom:"6px"}}>
-    <Lbl color={C.dim}>✠  Confession & Reach Out</Lbl>
-    <p style={{fontSize:"13px",color:C.dim,lineHeight:1.78,margin:"0 0 14px",opacity:0.8}}>Confession happens to someone. Don't carry it alone.</p>
-    <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-      <button onClick={()=>setReachView("brother")} style={{width:"100%",background:`${A}14`,border:`1px solid ${A}55`,color:A,padding:"13px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase"}}>⚔  Reach Out to a Brother</button>
-      <button onClick={()=>{setReachView("pastor");setPView("list");}} style={{width:"100%",background:"transparent",border:`1px solid ${C.hi}`,color:C.dim,padding:"12px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase"}}>✦  Reach Out to a Pastor</button>
-    </div>
-    <div style={{marginTop:"18px"}}>
-      <Lbl color={C.dim} mb="9px">Examination of Conscience</Lbl>
-      {CONFESS_PROMPTS.map((p,i)=>(
-        <div key={i} style={{padding:"8px 0",borderBottom:`1px solid ${C.border}`,fontSize:"13px",color:C.sand,opacity:0.6,lineHeight:1.65}}>{p}</div>
-      ))}
-    </div>
-  </div>
-</div>
-)}
-
-{/* BROTHER EDIT/ADD */}
-{tab==="brothers"&&!reachView&&bView==="edit"&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setBView("list")} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <h2 style={{...sr,fontSize:"18px",fontWeight:"normal",margin:"0 0 18px",color:C.cream}}>{editB?"Edit Brother":"Add a Brother"}</h2>
-  {[{label:"Name *",val:newName,set:setNewName,ph:"John Smith",type:"text"},{label:"Phone",val:newPhone,set:setNewPhone,ph:"+1 (555) 000-0000",type:"tel"},{label:"Email",val:newEmail,set:setNewEmail,ph:"john@example.com",type:"email"}].map(({label,val,set,ph,type})=>(
-    <div key={label} style={{marginBottom:"14px"}}>
-      <Lbl color={C.dim}>{label}</Lbl>
-      <input type={type} value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={{width:"100%",background:C.surface,border:`1px solid ${C.hi}`,padding:"10px 12px",color:C.cream,fontSize:"14px",...sr,outline:"none",boxSizing:"border-box"}}/>
-    </div>
-  ))}
-  <div style={{display:"flex",gap:"7px",marginTop:"5px"}}>
-    <button onClick={()=>{if(!newName.trim())return;if(!editB){setBrothers(p=>[...p,{id:Date.now(),name:newName.trim(),phone:newPhone.trim(),email:newEmail.trim(),checkedIn:false,lastCheckin:"Never",hist:[]}]);}else{setBrothers(p=>p.map(b=>b.id===editB.id?{...b,name:newName.trim(),phone:newPhone.trim(),email:newEmail.trim()}:b));}setBView("list");setEditB(null);}} style={{flex:1,background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"11px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase"}}>{editB?"Save":"Add Brother"}</button>
-    {editB&&<button onClick={()=>{setBrothers(p=>p.filter(b=>b.id!==editB.id));setBView("list");setEditB(null);}} style={{background:"transparent",border:"1px solid #8A3A3A",color:"#C87A7A",padding:"11px 14px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"2px",textTransform:"uppercase"}}>Remove</button>}
-  </div>
-</div>
-)}
-
-{/* CHECK-IN */}
-{tab==="brothers"&&!reachView&&bView==="checkin"&&msgTarget&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setBView("list")} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <div style={{display:"flex",alignItems:"center",gap:"13px",padding:"15px 16px",background:C.surface,border:`1px solid ${C.border}`,marginBottom:"18px"}}>
-    <div style={{width:"46px",height:"46px",borderRadius:"50%",border:`1px solid ${A}50`,display:"flex",alignItems:"center",justifyContent:"center",...sr,fontSize:"17px",color:A,background:`${A}14`,flexShrink:0}}>{msgTarget.name[0].toUpperCase()}</div>
-    <div style={{...sr,fontSize:"16px",color:C.cream}}>{msgTarget.name}</div>
-  </div>
-  <Lbl color={C.dim}>Message</Lbl>
-  <textarea value={checkinMsg} onChange={e=>setCheckinMsg(e.target.value)} style={{width:"100%",minHeight:"90px",background:C.surface,border:`1px solid ${C.border}`,padding:"13px",color:C.sand,fontSize:"13px",lineHeight:1.75,...sr,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:"10px"}}/>
-  <Lbl color={C.dim} mb="7px">Questions Included</Lbl>
-  {checkinQs.map((q,i)=><div key={i} style={{...sn,fontSize:"8px",color:C.dim,padding:"4px 0",borderBottom:`1px solid ${C.border}`,opacity:0.65}}>{i+1}. {q}</div>)}
-  <div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"14px"}}>
-    {(msgTarget.phone||msgTarget.email)&&(
-      <div style={{padding:"12px 14px",background:`${A}10`,border:`1px solid ${A}40`,marginBottom:"4px"}}>
-        <div style={{...sn,fontSize:"7px",color:A,letterSpacing:"3px",textTransform:"uppercase",marginBottom:"8px"}}>Quick Send</div>
-        <div style={{display:"flex",gap:"7px"}}>
-          {msgTarget.phone&&<a href={`sms:${msgTarget.phone}?body=${encodeURIComponent(checkinMsg+"\n\n"+checkinQs.map((q,i)=>`${i+1}. ${q}`).join("\n"))}`} onClick={()=>{doCheckin(msgTarget.id);setTimeout(()=>setBView("list"),300);}} style={{flex:1,display:"block",textAlign:"center",background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"9px",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",textDecoration:"none"}}>💬 SMS</a>}
-          {msgTarget.email&&<a href={`mailto:${msgTarget.email}?subject=Chambers Check-In&body=${encodeURIComponent(checkinMsg+"\n\n"+checkinQs.map((q,i)=>`${i+1}. ${q}`).join("\n"))}`} onClick={()=>{doCheckin(msgTarget.id);setTimeout(()=>setBView("list"),300);}} style={{flex:1,display:"block",textAlign:"center",background:"transparent",border:`1px solid ${A}40`,color:A,padding:"9px",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",textDecoration:"none"}}>✉ Email</a>}
-        </div>
-      </div>
-    )}
-    <button onClick={()=>{doCheckin(msgTarget.id);setBView("list");}} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.dim,padding:"11px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"2px",textTransform:"uppercase"}}>Mark Checked In (No Message)</button>
-  </div>
-</div>
-)}
-
-{/* MESSAGE */}
-{tab==="brothers"&&!reachView&&bView==="message"&&msgTarget&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setBView("list")} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <div style={{display:"flex",alignItems:"center",gap:"13px",padding:"15px 16px",background:C.surface,border:`1px solid ${C.border}`,marginBottom:"18px"}}>
-    <div style={{width:"46px",height:"46px",borderRadius:"50%",border:`1px solid ${A}50`,display:"flex",alignItems:"center",justifyContent:"center",...sr,fontSize:"17px",color:A,background:`${A}14`,flexShrink:0}}>{msgTarget.name[0].toUpperCase()}</div>
-    <div style={{...sr,fontSize:"16px",color:C.cream}}>{msgTarget.name}</div>
-  </div>
-  <Lbl color={C.dim}>Message</Lbl>
-  <textarea value={msgText} onChange={e=>setMsgText(e.target.value)} placeholder="Hey brother..." style={{width:"100%",minHeight:"130px",background:C.surface,border:`1px solid ${C.border}`,padding:"13px",color:C.sand,fontSize:"13px",lineHeight:1.75,...sr,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:"13px"}}/>
-  <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-    {msgTarget.phone&&<a href={`sms:${msgTarget.phone}?body=${encodeURIComponent(msgText)}`} style={{display:"block",textAlign:"center",background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"12px",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",textDecoration:"none",boxSizing:"border-box"}}>💬 Send via SMS</a>}
-    {msgTarget.email&&<a href={`mailto:${msgTarget.email}?body=${encodeURIComponent(msgText)}`} style={{display:"block",textAlign:"center",background:"transparent",border:`1px solid ${A}40`,color:A,padding:"12px",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",textDecoration:"none",boxSizing:"border-box"}}>✉ Send via Email</a>}
-    {!msgTarget.phone&&!msgTarget.email&&<div style={{textAlign:"center",padding:"14px",border:`1px solid ${C.border}`,color:C.dim,fontSize:"12px"}}>Add contact info via Manage above.</div>}
-  </div>
-</div>
-)}
-
-{/* REACH OUT — BROTHER */}
-{tab==="brothers"&&reachView==="brother"&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setReachView(null)} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <h2 style={{...sr,fontSize:"18px",fontWeight:"normal",margin:"0 0 7px",color:C.cream}}>Reach Out to a Brother</h2>
-  <p style={{fontSize:"13px",color:C.dim,lineHeight:1.75,margin:"0 0 16px"}}>You don't have to fight alone. Ask for prayer and presence.</p>
-  <Lbl color={C.dim}>Select a Brother</Lbl>
-  <div style={{display:"flex",flexDirection:"column",gap:"2px",marginBottom:"14px"}}>
-    {brothers.map((b,i)=>(
-      <div key={b.id}>
-        <button onClick={()=>setReachTarget(prev=>prev?.id===b.id?null:b)} style={{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"11px 0",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}>
-          <div style={{width:"36px",height:"36px",borderRadius:"50%",border:`1px solid ${reachTarget?.id===b.id?A:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",...sr,fontSize:"14px",color:reachTarget?.id===b.id?A:C.dim,background:reachTarget?.id===b.id?`${A}12`:C.surface,flexShrink:0}}>{b.name[0].toUpperCase()}</div>
-          <span style={{...sr,fontSize:"14px",color:reachTarget?.id===b.id?C.cream:C.sand,flex:1}}>{b.name}</span>
-          {reachTarget?.id===b.id&&<span style={{color:A,fontSize:"12px"}}>✓</span>}
-        </button>
-        {i<brothers.length-1&&<div style={{height:"1px",background:"rgba(200,168,107,0.09)"}}/>}
-      </div>
-    ))}
-  </div>
-  {reachTarget&&(reachTarget.phone||reachTarget.email)&&(
-    <div style={{padding:"12px 14px",background:`${A}10`,border:`1px solid ${A}40`,marginBottom:"13px"}}>
-      <div style={{...sn,fontSize:"7px",color:A,letterSpacing:"3px",textTransform:"uppercase",marginBottom:"8px"}}>Quick Send</div>
-      <div style={{display:"flex",gap:"7px"}}>
-        {reachTarget.phone&&<a href={`sms:${reachTarget.phone}?body=${encodeURIComponent("I'm struggling and need prayer. Can we talk?")}`} style={{flex:1,display:"block",textAlign:"center",background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"9px",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",textDecoration:"none"}}>💬 SMS</a>}
-        {reachTarget.email&&<a href={`mailto:${reachTarget.email}?subject=I need prayer&body=${encodeURIComponent("I'm struggling and need prayer. Can we talk?")}`} style={{flex:1,display:"block",textAlign:"center",background:"transparent",border:`1px solid ${A}40`,color:A,padding:"9px",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",textDecoration:"none"}}>✉ Email</a>}
-      </div>
-    </div>
-  )}
-  <Lbl color={C.dim}>Custom Message</Lbl>
-  <textarea value={reachMsg} onChange={e=>setReachMsg(e.target.value)} placeholder="I'm struggling and need prayer. Can we talk?" style={{width:"100%",minHeight:"90px",background:C.surface,border:`1px solid ${C.border}`,padding:"12px",color:C.sand,fontSize:"13px",lineHeight:1.75,...sr,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:"11px"}}/>
-  {!reachTarget&&<div style={{padding:"9px",border:`1px solid ${C.border}`,color:C.dim,fontSize:"12px",textAlign:"center",opacity:0.6,marginBottom:"9px"}}>Select a brother above</div>}
-</div>
-)}
-
-{/* REACH OUT — PASTOR */}
-{tab==="brothers"&&reachView==="pastor"&&pView==="list"&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setReachView(null)} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"8px"}}>
-    <h2 style={{...sr,fontSize:"18px",fontWeight:"normal",margin:0,color:C.cream}}>Reach Out to a Pastor</h2>
-    <button onClick={()=>{setNewPN("");setNewPR("");setNewPPh("");setNewPEm("");setEditP(null);setPView("edit");}} style={{background:`${A}14`,border:`1px solid ${A}40`,color:A,padding:"4px 10px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase"}}>+ Add</button>
-  </div>
-  <p style={{fontSize:"13px",color:C.dim,lineHeight:1.75,margin:"0 0 16px"}}>Some things need more than a brother. A pastor carries spiritual authority and pastoral counsel.</p>
-  {pastors.map((p,i)=>(
-    <div key={p.id}>
-      <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"13px 0"}}>
-        <div style={{width:"42px",height:"42px",borderRadius:"50%",border:`1px solid ${A}50`,display:"flex",alignItems:"center",justifyContent:"center",...sr,fontSize:"15px",color:A,background:`${A}10`,flexShrink:0}}>{p.name[0]?.toUpperCase()||"P"}</div>
-        <div style={{flex:1}}>
-          <div style={{...sr,fontSize:"14px",color:C.cream}}>{p.name}</div>
-          <div style={{...sn,fontSize:"8px",color:A,letterSpacing:"1px",marginTop:"2px",textTransform:"uppercase"}}>{p.role||"Pastor / Elder"}</div>
-        </div>
-        <div style={{display:"flex",gap:"5px"}}>
-          <button onClick={()=>{setPTarget(p);setPMsg("");setPView("compose");}} style={{background:`${A}14`,border:`1px solid ${A}40`,color:A,padding:"5px 9px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"1px",textTransform:"uppercase"}}>Message</button>
-          <button onClick={()=>{setEditP(p);setNewPN(p.name);setNewPR(p.role);setNewPPh(p.phone);setNewPEm(p.email);setPView("edit");}} style={{background:"transparent",border:`1px solid ${C.border}`,color:`${C.dim}60`,padding:"5px 8px",cursor:"pointer",fontSize:"10px"}}>✏</button>
-        </div>
-      </div>
-      {i<pastors.length-1&&<div style={{height:"1px",background:"rgba(200,168,107,0.09)"}}/>}
-    </div>
-  ))}
-</div>
-)}
-
-{tab==="brothers"&&reachView==="pastor"&&pView==="edit"&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setPView("list")} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <h2 style={{...sr,fontSize:"18px",fontWeight:"normal",margin:"0 0 18px",color:C.cream}}>{editP?"Edit Pastor":"Add a Pastor / Elder"}</h2>
-  {[{label:"Name *",val:newPN,set:setNewPN,ph:"Pastor John Smith",type:"text"},{label:"Role",val:newPR,set:setNewPR,ph:"Senior Pastor, Elder…",type:"text"},{label:"Phone",val:newPPh,set:setNewPPh,ph:"+1 (555) 000-0000",type:"tel"},{label:"Email",val:newPEm,set:setNewPEm,ph:"pastor@church.com",type:"email"}].map(({label,val,set,ph,type})=>(
-    <div key={label} style={{marginBottom:"13px"}}>
-      <Lbl color={C.dim}>{label}</Lbl>
-      <input type={type} value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={{width:"100%",background:C.surface,border:`1px solid ${C.hi}`,padding:"9px 12px",color:C.cream,fontSize:"14px",...sr,outline:"none",boxSizing:"border-box"}}/>
-    </div>
-  ))}
-  <div style={{display:"flex",gap:"7px",marginTop:"5px"}}>
-    <button onClick={()=>{if(!newPN.trim())return;if(!editP){setPastors(p=>[...p,{id:Date.now(),name:newPN.trim(),role:newPR.trim(),phone:newPPh.trim(),email:newPEm.trim()}]);}else{setPastors(p=>p.map(x=>x.id===editP.id?{...x,name:newPN.trim(),role:newPR.trim(),phone:newPPh.trim(),email:newPEm.trim()}:x));}setPView("list");setEditP(null);}} style={{flex:1,background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"11px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase"}}>{editP?"Save":"Add Pastor"}</button>
-    {editP&&<button onClick={()=>{setPastors(p=>p.filter(x=>x.id!==editP.id));setPView("list");setEditP(null);}} style={{background:"transparent",border:"1px solid #8A3A3A",color:"#C87A7A",padding:"11px 13px",cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"2px",textTransform:"uppercase"}}>Remove</button>}
-  </div>
-</div>
-)}
-
-{tab==="brothers"&&reachView==="pastor"&&pView==="compose"&&pTarget&&(
-<div style={{padding:"20px 18px 0"}}>
-  <button onClick={()=>setPView("list")} style={{background:"none",border:"none",cursor:"pointer",color:C.dim,...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase",marginBottom:"18px",padding:0}}>← Back</button>
-  <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"14px 16px",background:C.surface,border:`1px solid ${C.border}`,marginBottom:"16px"}}>
-    <div style={{width:"46px",height:"46px",borderRadius:"50%",border:`1px solid ${A}50`,display:"flex",alignItems:"center",justifyContent:"center",...sr,fontSize:"17px",color:A,background:`${A}14`,flexShrink:0}}>{pTarget.name[0]?.toUpperCase()||"P"}</div>
-    <div>
-      <div style={{...sr,fontSize:"14px",color:C.cream}}>{pTarget.name}</div>
-      <div style={{...sn,fontSize:"8px",color:A,letterSpacing:"1px",marginTop:"2px",textTransform:"uppercase"}}>{pTarget.role||"Pastor / Elder"}</div>
-    </div>
-  </div>
-  {(pTarget.phone||pTarget.email)&&(
-    <div style={{padding:"12px 14px",background:`${A}10`,border:`1px solid ${A}40`,marginBottom:"14px"}}>
-      <div style={{...sn,fontSize:"7px",color:A,letterSpacing:"3px",textTransform:"uppercase",marginBottom:"8px"}}>Quick Send</div>
-      <div style={{display:"flex",gap:"7px"}}>
-        {pTarget.phone&&<a href={`sms:${pTarget.phone}?body=${encodeURIComponent("I need to speak with you. Can we meet this week?")}`} style={{flex:1,display:"block",textAlign:"center",background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"9px",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",textDecoration:"none"}}>💬 SMS</a>}
-        {pTarget.email&&<a href={`mailto:${pTarget.email}?subject=I need pastoral counsel&body=${encodeURIComponent("I need to speak with you. Can we meet this week?")}`} style={{flex:1,display:"block",textAlign:"center",background:"transparent",border:`1px solid ${A}40`,color:A,padding:"9px",...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",textDecoration:"none"}}>✉ Email</a>}
-      </div>
-    </div>
-  )}
-  <Lbl color={C.dim}>Templates</Lbl>
-  <div style={{display:"flex",flexDirection:"column",gap:"4px",marginBottom:"13px"}}>
-    {["I've been struggling with something serious and need to speak with you in person. Can we meet?","I need pastoral counsel and prayer. There's something I need to confess and I'd appreciate your guidance.","I'm in a difficult season and could use your wisdom. Would you have time for me this week?"].map((t,i)=>(
-      <button key={i} onClick={()=>setPMsg(t)} style={{textAlign:"left",background:pMsg===t?`${A}14`:C.surface,border:`1px solid ${pMsg===t?A:C.border}`,color:pMsg===t?A:C.dim,padding:"10px 12px",cursor:"pointer",fontSize:"12px",lineHeight:1.6,...sr,transition:"all 0.2s"}}>{t}</button>
-    ))}
-  </div>
-  <textarea value={pMsg} onChange={e=>setPMsg(e.target.value)} placeholder="Or write your own..." style={{width:"100%",minHeight:"90px",background:C.surface,border:`1px solid ${C.border}`,padding:"12px",color:C.sand,fontSize:"13px",lineHeight:1.75,...sr,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:"13px"}}/>
-  <div style={{display:"flex",flexDirection:"column",gap:"7px"}}>
-    {pTarget.phone&&<a href={`sms:${pTarget.phone}?body=${encodeURIComponent(pMsg||"I need to speak with you. Can we meet this week?")}`} style={{display:"block",textAlign:"center",background:`${A}18`,border:`1px solid ${A}55`,color:A,padding:"12px",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",textDecoration:"none",boxSizing:"border-box"}}>💬 Send via SMS</a>}
-    {pTarget.email&&<a href={`mailto:${pTarget.email}?subject=I need pastoral counsel&body=${encodeURIComponent(pMsg||"I need to speak with you. Can we meet this week?")}`} style={{display:"block",textAlign:"center",background:"transparent",border:`1px solid ${A}40`,color:A,padding:"12px",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",textDecoration:"none",boxSizing:"border-box"}}>✉ Send via Email</a>}
-  </div>
-</div>
-)}
+{tab==="brothers"&&<BrothersTab A={A}/>}
 
       </main>
       <div style={{position:"fixed",bottom:0,left:0,right:0,height:"2px",background:`linear-gradient(90deg,transparent,${A}55,transparent)`,zIndex:10}}/>

@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+
+  memberships   Membership[]
+  checkIns      CheckIn[]
+  posts         CellPost[]
+  reactions     Reaction[]
+  contacts      Contact[]
+  createdCells  Cell[]       @relation("CellCreator")
+}
+
+model Cell {
+  id          String   @id @default(cuid())
+  name        String
+  inviteCode  String   @unique
+  createdById String
+  createdBy   User     @relation("CellCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  memberships Membership[]
+  checkIns    CheckIn[]
+  posts       CellPost[]
+}
+
+model Membership {
+  id       String   @id @default(cuid())
+  userId   String
+  cellId   String
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cell Cell @relation(fields: [cellId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cellId])
+}
+
+// One row per (user, cell, week) marks that the man checked in that week.
+model CheckIn {
+  id          String   @id @default(cuid())
+  userId      String
+  cellId      String
+  weekStart   DateTime // Monday 00:00 UTC of the week this check-in covers
+  checkedInAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cell Cell @relation(fields: [cellId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cellId, weekStart])
+}
+
+model CellPost {
+  id        String   @id @default(cuid())
+  cellId    String
+  authorId  String
+  text      String
+  kind      String // "verse" | "weight" | "prayer"
+  createdAt DateTime @default(now())
+
+  cell      Cell       @relation(fields: [cellId], references: [id], onDelete: Cascade)
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reactions Reaction[]
+}
+
+model Reaction {
+  id     String @id @default(cuid())
+  postId String
+  userId String
+  kind   String // "cross" | "flame"
+
+  post CellPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+// Personal contacts (e.g. a pastor or prayer partner) — owned by one user,
+// not shared with a Cell. Synced per-account instead of per-device.
+model Contact {
+  id      String  @id @default(cuid())
+  userId  String
+  name    String
+  role    String  @default("")
+  phone   String  @default("")
+  email   String  @default("")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

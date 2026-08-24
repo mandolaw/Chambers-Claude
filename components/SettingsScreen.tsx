@@ -1,9 +1,27 @@
 "use client";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { C, sr, sn } from "@/lib/theme";
 import { LS, UID, usePersist } from "@/lib/storage";
 import { fireNotification, requestNotifyPermission } from "@/lib/notifications";
 import { Lbl } from "@/components/atoms";
+
+function AccountSettings(){
+  const { data: session, status } = useSession();
+  if(status!=="authenticated") return (
+    <div>
+      <p style={{fontSize:"13px",color:C.dim,lineHeight:1.78,margin:"0 0 14px"}}>You're not signed in — your Rule and journal still work on this device, but you'll need an account to join a Cell with real brothers.</p>
+      <a href="/login" style={{display:"block",textAlign:"center",padding:"12px",background:`${C.gold}14`,border:`1px solid ${C.gold}40`,color:C.gold,...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase",textDecoration:"none"}}>Sign In</a>
+    </div>
+  );
+  return (
+    <div>
+      <div style={{...sr,fontSize:"14px",color:C.cream,marginBottom:"2px"}}>{session.user?.name}</div>
+      <div style={{...sn,fontSize:"11px",color:C.dim,marginBottom:"14px"}}>{session.user?.email}</div>
+      <button onClick={()=>signOut({callbackUrl:"/"})} style={{width:"100%",padding:"11px",background:"transparent",border:`1px solid ${C.border}`,color:C.dim,cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"3px",textTransform:"uppercase"}}>Sign Out</button>
+    </div>
+  );
+}
 
 function NotificationSettings(){
   const [remindersOn, setRemindersOn] = usePersist("remindersOn",false);
@@ -81,11 +99,9 @@ function NotificationSettings(){
 export function SettingsScreen({onBack, onInstall}: {onBack: () => void; onInstall: () => void}){
   const [confirmed,setConfirmed]=useState(false);
   const [exported,setExported]=useState(false);
-  const [myName,setMyName]=usePersist("myName","Me");
-  const [draft,setDraft]=useState(myName);
 
   const exportData=()=>{
-    const keys=["ruleDone","dayChecked","readDates","verseChecked","chalDone","prayerLog","brothers","checkinQs","journal","journalEntries","ruleHistory","monthNotes","pastors","selMonth","cellPosts","myName","hasVisited","lastVisit"];
+    const keys=["ruleDone","dayChecked","readDates","verseChecked","chalDone","prayerLog","checkinQs","journal","journalEntries","ruleHistory","monthNotes","selMonth","hasVisited","lastVisit"];
     const data: Record<string, any> ={_uid:UID,_exported:new Date().toISOString()};
     keys.forEach(k=>{const v=LS.get(k,null);if(v!==null)data[k]=v;});
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
@@ -126,17 +142,13 @@ export function SettingsScreen({onBack, onInstall}: {onBack: () => void; onInsta
       <h1 style={{...sr,fontSize:"22px",fontWeight:"normal",color:C.cream,margin:"0 0 24px"}}>Settings</h1>
 
       <div style={{marginBottom:"28px"}}>
-        <Lbl color={C.dim}>Your Name</Lbl>
-        <div style={{display:"flex",gap:"8px"}}>
-          <input value={draft} onChange={e=>setDraft(e.target.value)} style={{flex:1,background:C.surface,border:`1px solid ${C.hi}`,padding:"9px 12px",color:C.cream,fontSize:"14px",...sr,outline:"none"}}/>
-          <button onClick={()=>setMyName(draft)} style={{background:`${C.gold}18`,border:`1px solid ${C.gold}50`,color:C.gold,padding:"9px 16px",cursor:"pointer",...sn,fontSize:"7px",letterSpacing:"2px",textTransform:"uppercase"}}>Save</button>
-        </div>
-        <div style={{...sn,fontSize:"9px",color:C.dim,marginTop:"6px",lineHeight:1.6}}>Used when you post to the Cell.</div>
+        <Lbl color={C.dim}>Account</Lbl>
+        <AccountSettings/>
       </div>
 
       <div style={{borderTop:`1px solid ${C.border}`,paddingTop:"22px",marginBottom:"28px"}}>
         <Lbl color={C.dim}>Data</Lbl>
-        <p style={{fontSize:"13px",color:C.dim,lineHeight:1.78,margin:"0 0 16px"}}>Your prayer log, journal, and brothers are stored only on this device. Export regularly to keep a backup.</p>
+        <p style={{fontSize:"13px",color:C.dim,lineHeight:1.78,margin:"0 0 16px"}}>Your prayer log and journal are stored only on this device — export regularly to keep a backup. Your Cell (Brothers) and Contacts are saved to your account and don't need exporting.</p>
         <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
           <button onClick={exportData} style={{width:"100%",padding:"13px",background:`${C.gold}14`,border:`1px solid ${C.gold}40`,color:C.gold,cursor:"pointer",...sn,fontSize:"8px",letterSpacing:"4px",textTransform:"uppercase"}}>
             {exported?"✓ Exported":"⊕  Export Data (JSON)"}
