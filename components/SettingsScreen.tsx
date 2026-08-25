@@ -36,6 +36,7 @@ function AccountSettings(){
     <div>
       <div style={{...sr,fontSize:"14px",color:C.cream,marginBottom:"2px"}}>{session.user?.name}</div>
       <div style={{...sn,fontSize:"11px",color:C.dim,marginBottom:"10px"}}>{session.user?.email}</div>
+      <div style={{...sn,fontSize:"9px",color:`${C.dim}90`,lineHeight:1.6,marginBottom:"14px"}}>We record that your account was active today when you sign in or use a Cell — nothing more specific than that, and never what you pray, journal, or log.</div>
 
       {verified===false && (
         <div style={{padding:"11px 13px",background:`${C.gold}10`,border:`1px solid ${C.gold}40`,marginBottom:"12px"}}>

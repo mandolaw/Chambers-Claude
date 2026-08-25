@@ -14,6 +14,9 @@ model User {
   name          String
   emailVerified DateTime?
   createdAt     DateTime  @default(now())
+  // Set at most once/day (see auth.ts) — daily-granularity is all DAU/WAU/MAU
+  // tracking needs, and it keeps this to one write per user per day.
+  lastActiveAt  DateTime?
 
   memberships         Membership[]
   checkIns            CheckIn[]

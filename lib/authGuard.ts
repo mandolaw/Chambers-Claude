@@ -15,3 +15,15 @@ export async function requireVerifiedUser() {
   }
   return { userId };
 }
+
+// Single-owner admin gate — no roles system yet, just a known email set via
+// env var. Good enough for one person checking their own app's numbers.
+export async function requireAdmin() {
+  const session = await auth();
+  const email = session?.user?.email?.toLowerCase();
+  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  if (!email || !adminEmail || email !== adminEmail) {
+    return { error: "Not authorized.", status: 403 as const };
+  }
+  return { ok: true as const };
+}
