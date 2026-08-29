@@ -215,6 +215,18 @@ export function ChambersApp({intakeAnswers, onOpenSettings}: {intakeAnswers: any
     </div>
   </div>
 
+  {/* This week's memory verse — same all week, tied to the reading plan */}
+  {weekPlan?.verse&&(
+  <div style={{background:C.surface,border:`1px solid ${A}30`,padding:"16px 16px 14px",marginBottom:"24px"}}>
+    <Lbl color={A}>✦  This Week's Memory Verse</Lbl>
+    <div style={{...sn,fontSize:"7px",letterSpacing:"3px",textTransform:"uppercase",color:C.dim,marginBottom:"8px"}}>{weekPlan.verse}</div>
+    <p style={{...sr,fontSize:"16px",lineHeight:1.95,color:C.cream,margin:"0 0 12px",fontStyle:"italic"}}>"{weekPlan.vText}"</p>
+    <button onClick={()=>setVerseChecked(p=>({...p,[`wk-${weekPlan.week}`]:!p[`wk-${weekPlan.week}`]}))} style={{...sn,fontSize:"7px",letterSpacing:"2px",textTransform:"uppercase",background:verseChecked[`wk-${weekPlan.week}`]?`${A}15`:"transparent",border:`1px solid ${verseChecked[`wk-${weekPlan.week}`]?A:C.hi}`,color:verseChecked[`wk-${weekPlan.week}`]?A:C.dim,padding:"6px 13px",cursor:"pointer",transition:"all 0.3s"}}>
+      {verseChecked[`wk-${weekPlan.week}`]?"✓  Memorized":"Mark Memorized"}
+    </button>
+  </div>
+  )}
+
   {/* Today's verse — full text */}
   <div style={{borderLeft:`2px solid ${A}45`,paddingLeft:"14px",marginBottom:"24px"}}>
     <div style={{...sn,fontSize:"7px",letterSpacing:"4px",textTransform:"uppercase",color:A,marginBottom:"8px"}}>{todayVerse}</div>

@@ -14,7 +14,7 @@ export const CAL=[
 ];
 
 export const WEEKLY_READINGS=[
-  {week:"Unseen Warfare — Week 1",days:[
+  {week:"Unseen Warfare — Week 1",verse:"Proverbs 4:23",vText:"Above all else, guard your heart, for everything you do flows from it.",days:[
     {day:"Sun",ref:"Proverbs 4:20–27",   focus:"List every gate to your heart. Guard each one today."},
     {day:"Mon",ref:"Matthew 15:18–19",   focus:"What comes out of your heart most naturally? Be honest."},
     {day:"Tue",ref:"Psalm 139:23–24",    focus:"Pray this psalm word for word. Ask God to search you."},
@@ -23,7 +23,7 @@ export const WEEKLY_READINGS=[
     {day:"Fri",ref:"Proverbs 4:23",      focus:"What one gate needs a guard today? Name it and guard it."},
     {day:"Sat",ref:"Psalm 51:1–12",      focus:"Rest. Pray Psalm 51 slowly as your own confession."},
   ]},
-  {week:"2 Timothy — Week 1",days:[
+  {week:"2 Timothy — Week 1",verse:"2 Timothy 1:7",vText:"For God has not given us a spirit of fear, but of power and of love and of a sound mind.",days:[
     {day:"Sun",ref:"2 Timothy 1:1–2",    focus:"Read the whole letter through. What words repeat?"},
     {day:"Mon",ref:"2 Timothy 1:6–7",    focus:"What gift has God given you? What has caused the flame to dim?"},
     {day:"Tue",ref:"2 Timothy 1:8–9",    focus:"What are we called not to be ashamed of? Where are you tempted?"},
@@ -32,7 +32,7 @@ export const WEEKLY_READINGS=[
     {day:"Fri",ref:"2 Timothy 1:15–18",  focus:"What made Onesiphorus different from those who abandoned Paul?"},
     {day:"Sat",ref:"2 Timothy 1",        focus:"Write a one-paragraph summary. What is the central theme?"},
   ]},
-  {week:"OT Leaders — Abraham",days:[
+  {week:"OT Leaders — Abraham",verse:"Hebrews 11:1",vText:"Now faith is confidence in what we hope for and assurance about what we do not see.",days:[
     {day:"Sun",ref:"Genesis 12, Heb 11:8–12",    focus:"What did Abraham believe that made him willing to go?"},
     {day:"Mon",ref:"Genesis 17, Gal 3:6–9",      focus:"What is the covenant? How does it connect to the gospel?"},
     {day:"Tue",ref:"Genesis 18:1–19:29",          focus:"How does Abraham intercede for Sodom? What does this teach?"},
@@ -41,7 +41,7 @@ export const WEEKLY_READINGS=[
     {day:"Fri",ref:"Romans 4:1–12",              focus:"How does Paul use Abraham to explain justification by faith?"},
     {day:"Sat",ref:"Genesis 12–22",              focus:"Upward, Inward, Outward — how did God develop Abraham in each?"},
   ]},
-  {week:"Prayer Guide — Week 1",days:[
+  {week:"Prayer Guide — Week 1",verse:"Philippians 4:6",vText:"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.",days:[
     {day:"Sun",ref:"Psalm 10:17–18",     focus:"Pray this as your call to worship. Sit in silence first."},
     {day:"Mon",ref:"Ephesians 4:1–6",    focus:"Where have I failed to love my neighbor this week?"},
     {day:"Tue",ref:"Ephesians 6:10–18",  focus:"Put on the full armor in prayer. Piece by piece, aloud."},
@@ -52,7 +52,7 @@ export const WEEKLY_READINGS=[
   ]},
 
   // ── DAVID: A Man After God's Own Heart ────────────────────
-  {week:"David — Man After God's Heart",days:[
+  {week:"David — Man After God's Heart",verse:"1 Samuel 16:7",vText:"The Lord does not look at the things people look at. People look at the outward appearance, but the Lord looks at the heart.",days:[
     {day:"Sun",ref:"1 Samuel 13:14, 16:7",focus:"God chose David not for his appearance but his heart. What does God actually see when He looks at yours?"},
     {day:"Mon",ref:"1 Samuel 17:32–50",   focus:"David ran toward Goliath. What giant are you standing in front of right now? What is your sling?"},
     {day:"Tue",ref:"Psalm 51:1–17",       focus:"After his worst failure David wrote this. Read it as your own prayer. Don't skip any verse."},
@@ -63,7 +63,7 @@ export const WEEKLY_READINGS=[
   ]},
 
   // ── SERMON ON THE MOUNT: The Upside-Down Kingdom ──────────
-  {week:"Sermon on the Mount — Week 1",days:[
+  {week:"Sermon on the Mount — Week 1",verse:"Matthew 6:33",vText:"But seek first his kingdom and his righteousness, and all these things will be given to you as well.",days:[
     {day:"Sun",ref:"Matthew 5:1–12",      focus:"The Beatitudes describe a man the world would not hire. Which one cuts closest to where you are failing?"},
     {day:"Mon",ref:"Matthew 5:13–20",     focus:"Salt and light — both are only useful when they make contact. Where are you keeping yourself separate when you should be present?"},
     {day:"Tue",ref:"Matthew 5:21–30",     focus:"Murder starts with contempt. Adultery starts with a look. Jesus goes to the root. What root in you needs cutting?"},
@@ -74,7 +74,7 @@ export const WEEKLY_READINGS=[
   ]},
 
   // ── PAUL: The Making of an Apostle ────────────────────────
-  {week:"Paul — Strength in Weakness",days:[
+  {week:"Paul — Strength in Weakness",verse:"2 Corinthians 12:9",vText:"My grace is sufficient for you, for my power is made perfect in weakness.",days:[
     {day:"Sun",ref:"Acts 9:1–22",         focus:"Saul was zealous, educated, and utterly wrong. God stopped him cold. When has God stopped you cold? What were you certain of that turned out to be wrong?"},
     {day:"Mon",ref:"Philippians 3:4–14",  focus:"Paul counted everything he had built as loss. List your credentials, achievements, reputation. Now read verse 8 again. What does this cost you?"},
     {day:"Tue",ref:"2 Corinthians 11:23–12:10",focus:"Paul's resume is suffering, not success. My power is made perfect in weakness. Where is your weakness right now? Can you offer it as the place God works?"},
@@ -85,7 +85,7 @@ export const WEEKLY_READINGS=[
   ]},
 
   // ── NEHEMIAH: The Leader Who Built and Fought ─────────────
-  {week:"Nehemiah — The Builder's Courage",days:[
+  {week:"Nehemiah — The Builder's Courage",verse:"Nehemiah 8:10",vText:"Do not grieve, for the joy of the Lord is your strength.",days:[
     {day:"Sun",ref:"Nehemiah 1:1–11",     focus:"Nehemiah heard bad news and his first response was to mourn, fast, and pray — not to fix. When crisis hits, what is your first move?"},
     {day:"Mon",ref:"Nehemiah 2:1–8",      focus:"Nehemiah was afraid but asked anyway. He had a plan and he asked specifically. What have you been afraid to ask for? What would a specific ask look like?"},
     {day:"Tue",ref:"Nehemiah 2:11–18",    focus:"Nehemiah surveyed the wall at night before he told anyone his plan. He knew what he was dealing with. What broken wall in your life have you not yet surveyed honestly?"},
@@ -96,7 +96,7 @@ export const WEEKLY_READINGS=[
   ]},
 
   // ── UNSEEN WARFARE — Week 2 ───────────────────────────────
-  {week:"Unseen Warfare — Week 2",days:[
+  {week:"Unseen Warfare — Week 2",verse:"2 Corinthians 10:5",vText:"We take captive every thought to make it obedient to Christ.",days:[
     {day:"Sun",ref:"1 Peter 5:8–11",      focus:"Your enemy prowls like a lion. Lions stalk the isolated and the weak. Where are you most isolated right now?"},
     {day:"Mon",ref:"James 4:1–10",        focus:"Conflicts come from desires at war within you. Name the desire underneath your most persistent conflict this week."},
     {day:"Tue",ref:"Romans 8:5–14",       focus:"The mind set on the flesh versus the mind set on the Spirit. Which one describes your thought patterns this morning?"},
@@ -107,7 +107,7 @@ export const WEEKLY_READINGS=[
   ]},
 
   // ── 2 TIMOTHY — Week 2 ───────────────────────────────────
-  {week:"2 Timothy — Week 2",days:[
+  {week:"2 Timothy — Week 2",verse:"2 Timothy 2:13",vText:"If we are faithless, he remains faithful, for he cannot disown himself.",days:[
     {day:"Sun",ref:"2 Timothy 2:1–7",     focus:"Be strong in grace. Endure hardship. Paul gives three images: soldier, athlete, farmer. Which one best describes where you are in your faith right now?"},
     {day:"Mon",ref:"2 Timothy 2:8–13",    focus:"If we are faithless, he remains faithful. What does it mean to you that God's faithfulness is not contingent on yours?"},
     {day:"Tue",ref:"2 Timothy 2:14–26",   focus:"Flee youthful passions and pursue righteousness, faith, love, peace — along with those who call on the Lord from a pure heart. Who are those people in your life?"},
