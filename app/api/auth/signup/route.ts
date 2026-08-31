@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -38,13 +38,19 @@ export async function POST(req: Request) {
       data: { email, passwordHash, name },
       select: { id: true, email: true, name: true },
     });
-    try {
-      await issueVerificationEmail(user.id, user.email, user.name);
-    } catch (emailErr) {
-      // Don't fail account creation over a flaky email provider — the
-      // account still works, and they can resend from Settings.
-      console.error("Failed to send verification email:", emailErr);
-    }
+    // Respond as soon as the account exists — sending the email is a real
+    // network call to Resend and shouldn't hold up the signup response.
+    // after() runs this once the response has gone out, and (unlike a bare
+    // fire-and-forget) keeps the serverless function alive until it's done.
+    after(async () => {
+      try {
+        await issueVerificationEmail(user.id, user.email, user.name);
+      } catch (emailErr) {
+        // Don't fail account creation over a flaky email provider — the
+        // account still works, and they can resend from Settings.
+        console.error("Failed to send verification email:", emailErr);
+      }
+    });
     return NextResponse.json({ user });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
